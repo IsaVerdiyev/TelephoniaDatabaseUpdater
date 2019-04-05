@@ -57,14 +57,12 @@ namespace TelephoniaDatabaseUpdaterCore.Services
             try
             {
                 transaction.Rollback();
-                Console.WriteLine($"Success: {DateTime.Now}: Database rolled back successfully");
+                throw new Exception($"{ex.Message}.\n Database rolled back successfully");
             }
             catch (Exception rollbackException)
             {
-                Console.WriteLine($"ERROR during rollback of database: {DateTime.Now}: {rollbackException.Message}");
-                throw;
+                throw new Exception($"{ex.Message}.\nERROR during rollback of database. Exception content : {rollbackException.Message}");
             }
-            throw ex;
         }
     }
 }

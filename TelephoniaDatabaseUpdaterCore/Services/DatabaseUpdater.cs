@@ -11,22 +11,22 @@ namespace TelephoniaDatabaseUpdaterCore.Services
     {
         public void UpdateDatabase()
         {
+            ILogger logger = new FileLogger();
+            CsvFileService csvFileService = new CsvFileService();
+            AsterixApiService asterixApiService = new AsterixApiService();
+            SqlDataBaseService sqlDataBaseService = new SqlDataBaseService();
+            CsvWorkdersService csvWorkersService = new CsvWorkdersService();
+
             try
             {
-                SQLiteTransaction sqlTransaction = null;
-                using (SQLiteConnection sqlConn = new SQLiteConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString))
+                string csvFilePath = csvFileService.GetCsvFileFromFolderIfFoundOne();
+                try
                 {
-
-                    sqlConn.Open();
-                    sqlTransaction = sqlConn.BeginTransaction();
+                    csvFileService.CopyCsvfileInHistoryFolder(csvFilePath);
+                    csvFileService.DeleteFirstLineWithDiyesSymbol(csvFilePath);
 
                     List<AsterixWorker> asterixWorkers;
                     List<CsvWorker> csvWorkers;
-
-                    ILogger logger = new FileLogger();
-                    AsterixApiService asterixApiService = new AsterixApiService();
-                    SqlDataBaseService sqlDataBaseService = new SqlDataBaseService();
-                    CsvWorkdersService csvWorkersService = new CsvWorkdersService(new CsvFileSearcher());
 
                     try
                     {
@@ -35,55 +35,68 @@ namespace TelephoniaDatabaseUpdaterCore.Services
                     }
                     catch (Exception ex)
                     {
-                        logger.Log($"ERROR in getting asterix data : {DateTime.Now}:  {ex.Message}");
-                        throw;
-                    }
+                        throw new Exception($"ERROR in getting asterix data\n\t {ex.Message}");
 
+                    }
                     try
                     {
-                        csvWorkers = csvWorkersService.GetCsvWorkers();
+                        csvWorkers = csvWorkersService.GetCsvWorkers(csvFilePath);
                         logger.Log($"Success: {DateTime.Now} Successfully read csv file.");
                     }
                     catch (Exception ex)
                     {
-                        logger.Log($"ERROR during reading csv file and preraring csvWorkers list: {DateTime.Now}: {ex.Message}");
-                        throw;
+                        throw new Exception($"ERROR during reading csv file and preraring csvWorkers list\n\t:  {ex.Message}");
+
                     }
 
-                    try
+                    SQLiteTransaction sqlTransaction = null;
+                    using (SQLiteConnection sqlConn = new SQLiteConnection(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString))
                     {
-                        sqlDataBaseService.ClearDatabase(sqlConn, sqlTransaction);
-                        logger.Log($"Success: {DateTime.Now}: Successfully erased database data");
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Log($"ERROR during erasing database data: {DateTime.Now}: {ex.Message}");
-                        sqlDataBaseService.RollbackDatabase(sqlTransaction, ex);
-                    }
+
+                        sqlConn.Open();
+                        sqlTransaction = sqlConn.BeginTransaction();
+
+                        try
+                        {
+                            sqlDataBaseService.ClearDatabase(sqlConn, sqlTransaction);
+                            logger.Log($"Success: {DateTime.Now}: Successfully erased database data");
+                        }
+                        catch (Exception ex)
+                        {
+                            sqlDataBaseService.RollbackDatabase(sqlTransaction, new Exception($"ERROR during erasing database data\n\t  {ex.Message}", ex));
+                        }
 
 
-                    try
-                    {
-                        new SqlDataBaseService().FillDatabase(sqlConn, sqlTransaction, csvWorkers, asterixWorkers);
-                        logger.Log($"Success: {DateTime.Now} Successfully filled data in database.");
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Log($"ERROR during writing data in database: {DateTime.Now}: {ex.Message}");
-                        sqlDataBaseService.RollbackDatabase(sqlTransaction, ex);
-                    }
+                        try
+                        {
+                            new SqlDataBaseService().FillDatabase(sqlConn, sqlTransaction, csvWorkers, asterixWorkers);
+                            logger.Log($"Success: {DateTime.Now} Successfully filled data in database.");
+                        }
+                        catch (Exception ex)
+                        {
+                            sqlDataBaseService.RollbackDatabase(sqlTransaction, new Exception($"ERROR during writing data in database\n\t.  {ex.Message}"));
+                        }
 
-                    sqlTransaction.Commit();
+                        sqlTransaction.Commit();
+                    }
+                }finally
+                {
+                    csvFileService.DeleteCsvFileFromFolder(csvFilePath);
                 }
+
+            }catch( Exception ex)
+            {
+                
+                logger.Log($"{DateTime.Now}\n\t {ex.Message}");
             }
-            catch (Exception ex) { }
             finally
             {
-                ILogger logger = new FileLogger();
+                
                 logger.Log("\n\n");
             }
+
         }
 
-        
+
     }
 }

@@ -13,14 +13,18 @@ namespace TelephoniaDatabaseUpdaterCore
         public static Timer timer;
         static void Main(string[] args)
         {
+            //Console.WriteLine($"Program started {DateTime.Now}");
             timer = new Timer(ExecuteUpdateInTimer, null, Timeout.Infinite, Timeout.Infinite);
             timer.Change(0, Timeout.Infinite);
-            Console.ReadLine();
+            while (true) { Console.ReadKey(); }
+
+
         }
 
-        public static void ExecuteUpdateInTimer(object obj) {
+        public static void ExecuteUpdateInTimer(object obj)
+        {
             new DatabaseUpdater().UpdateDatabase();
-            if(!int.TryParse(ConfigurationManager.AppSettings["MinutesOfTimer"], out int minutes))
+            if (!int.TryParse(ConfigurationManager.AppSettings["MinutesOfTimer"], out int minutes))
             {
                 minutes = 5;
                 ILogger logger = new FileLogger();

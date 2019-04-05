@@ -11,21 +11,16 @@ namespace TelephoniaDatabaseUpdaterCore.Services
 {
     class CsvWorkdersService
     {
-        private readonly CsvFileSearcher csvFileSearcher;
+        
 
-        public CsvWorkdersService(CsvFileSearcher csvFileSearcher)
+        public List<CsvWorker> GetCsvWorkers(string csvFilePath)
         {
-            this.csvFileSearcher = csvFileSearcher;
-        }
-
-        public List<CsvWorker> GetCsvWorkers()
-        {
-
-
+            
             List<CsvWorker> csvWorkers = new List<CsvWorker>();
              
-            using (var reader = new StreamReader(csvFileSearcher.GetCsvFileFromFolderIfFoundOne(), true))
+            using (var reader = new StreamReader(csvFilePath, true))
             {
+                
                 using (var csv = new CsvReader(reader))
                 {
                     var CswInitialWorkers = csv.GetRecords<CsvInitialWorker>();
