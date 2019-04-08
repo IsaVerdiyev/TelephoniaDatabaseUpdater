@@ -49,7 +49,7 @@ namespace TelephoniaDatabaseUpdaterCore.Services
         {
             try
             {
-                string format = "Mddyyyyhhmmsstt";
+                string format = "ddMMyyyy-hhmmss";
                 File.Copy(csvFilePath, $"{ConfigurationManager.AppSettings["CsvHistoryFilesFolderPath"]}/{Path.GetFileNameWithoutExtension(csvFilePath)}{DateTime.Now.ToString(format)}{Path.GetExtension(csvFilePath)}");
             }catch( Exception ex)
             {
