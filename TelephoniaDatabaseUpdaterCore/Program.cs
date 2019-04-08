@@ -16,7 +16,7 @@ namespace TelephoniaDatabaseUpdaterCore
             //Console.WriteLine($"Program started {DateTime.Now}");
             timer = new Timer(ExecuteUpdateInTimer, null, Timeout.Infinite, Timeout.Infinite);
             timer.Change(0, Timeout.Infinite);
-            while (true) { Thread.Sleep(1000); }
+            while (true) { Thread.Sleep(10000); }
 
 
         }
