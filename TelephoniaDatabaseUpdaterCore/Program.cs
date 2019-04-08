@@ -16,18 +16,19 @@ namespace TelephoniaDatabaseUpdaterCore
             //Console.WriteLine($"Program started {DateTime.Now}");
             timer = new Timer(ExecuteUpdateInTimer, null, Timeout.Infinite, Timeout.Infinite);
             timer.Change(0, Timeout.Infinite);
-            while (true) { Console.ReadKey(); }
+            while (true) { Thread.Sleep(1000); }
 
 
         }
 
         public static void ExecuteUpdateInTimer(object obj)
         {
-            new DatabaseUpdater().UpdateDatabase();
+            ILogger logger = new FileConsoleLogger();
+            new DatabaseUpdater(logger , new CsvFileService(), new AsterixApiService(),  new SqlDataBaseService(), new CsvWorkdersService()).UpdateDatabase();
             if (!int.TryParse(ConfigurationManager.AppSettings["MinutesOfTimer"], out int minutes))
             {
                 minutes = 5;
-                ILogger logger = new FileLogger();
+                
                 logger.Log("Couldn't parse MinutesOfTimer value to int");
             }
             timer.Change(minutes * 60000, Timeout.Infinite);

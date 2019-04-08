@@ -9,13 +9,23 @@ namespace TelephoniaDatabaseUpdaterCore.Services
 {
     class DatabaseUpdater
     {
+        private readonly ILogger logger;
+        private readonly CsvFileService csvFileService;
+        private readonly AsterixApiService asterixApiService;
+        private readonly SqlDataBaseService sqlDataBaseService;
+        private readonly CsvWorkdersService csvWorkdersService;
+
+        public DatabaseUpdater(ILogger logger, CsvFileService csvFileService, AsterixApiService asterixApiService, SqlDataBaseService sqlDataBaseService, CsvWorkdersService csvWorkdersService)
+        {
+            this.logger = logger;
+            this.csvFileService = csvFileService;
+            this.asterixApiService = asterixApiService;
+            this.sqlDataBaseService = sqlDataBaseService;
+            this.csvWorkdersService = csvWorkdersService;
+        }
         public void UpdateDatabase()
         {
-            ILogger logger = new FileLogger();
-            CsvFileService csvFileService = new CsvFileService();
-            AsterixApiService asterixApiService = new AsterixApiService();
-            SqlDataBaseService sqlDataBaseService = new SqlDataBaseService();
-            CsvWorkdersService csvWorkersService = new CsvWorkdersService();
+            
 
             try
             {
@@ -40,7 +50,7 @@ namespace TelephoniaDatabaseUpdaterCore.Services
                     }
                     try
                     {
-                        csvWorkers = csvWorkersService.GetCsvWorkers(csvFilePath);
+                        csvWorkers = csvWorkdersService.GetCsvWorkers(csvFilePath);
                         logger.Log($"Success: {DateTime.Now} Successfully read csv file.");
                     }
                     catch (Exception ex)
@@ -96,7 +106,6 @@ namespace TelephoniaDatabaseUpdaterCore.Services
             }
 
         }
-
 
     }
 }

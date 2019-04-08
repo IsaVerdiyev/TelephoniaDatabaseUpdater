@@ -6,7 +6,7 @@ using System.Text;
 
 namespace TelephoniaDatabaseUpdaterCore.Services
 {
-    class FileLogger : ILogger
+    class FileConsoleLogger : ILogger
     {
 
         public void Log(string logContent)
@@ -15,6 +15,8 @@ namespace TelephoniaDatabaseUpdaterCore.Services
             {
                 stream.WriteLine(logContent);
             }
+
+            Console.WriteLine(logContent);
         }
 
     }

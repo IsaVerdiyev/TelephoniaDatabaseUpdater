@@ -9,12 +9,8 @@ namespace TelephoniaDatabaseUpdaterCore.Services
 {
     class CsvFileService
     {
-       
-
-
         public string GetCsvFileFromFolderIfFoundOne()
         {
-            
                 string csvFolderPath = ConfigurationManager.AppSettings["CsvFolderPath"];
 
                 List<string> files = Directory.GetFiles(csvFolderPath, "*.*", SearchOption.TopDirectoryOnly).Where(n => n.Contains(".csv")).ToList();
@@ -25,7 +21,7 @@ namespace TelephoniaDatabaseUpdaterCore.Services
                 }
                 else if (files.Count == 0)
                 {
-                    throw new Exception($"Neutral: {DateTime.Now}: csv file was not found in folder {csvFolderPath}. No actions taken furthermore");
+                    throw new Exception($"csv file was not found in folder {csvFolderPath}. No actions taken furthermore");
                 }
 
                 return files.First();
